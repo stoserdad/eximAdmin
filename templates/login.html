@@ -1,17 +1,29 @@
 <html>
-<head>
-<title>Please Log In</title>
-</head>
+    <head>
+        <title>Please Log In</title>
+        <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/app.css">
+    </head>
 
-<body>
-<form action="/login" method="POST">
-    
-    <p>Username: <input type="text" name="username" /><p>
-     <p>Password: <input type="password" name="password" /><p>
-    <p><input type="submit" value="Log In" /></p>
-    {% module xsrf_form_html() %}
+    <body>
 
-</form>
-</body>
+        <div class="mypanel">
+            <form action="/login" method="POST" class="pure-form pure-form-aligned">
+                    <div class="pure-control-group">
+                        <label for="username">Username</label>
+                        <input type="text" name="username" />
+                    </div>
+                    <div class="pure-control-group">
+                        <label for="password">Password</label>
+                        <input type="password" name="password" />
+                    </div>
+                    <div class="pure-control-group">
+                        <label></label>
+                        <input type="submit" value="Log In" />
+                    </div>
+            {% module xsrf_form_html() %}
+            </form>
+        </div>
+    </body>
 </html>
 

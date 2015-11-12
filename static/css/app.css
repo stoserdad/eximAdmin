@@ -1,0 +1,18 @@
+body {
+    background-color: rgb(204, 205, 207);
+}
+.mypanel {
+    background-color: ghostwhite;
+    width: 450px;
+    height: 180px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-top: -100px;
+    margin-left: -200px;
+    border: black 1px solid;
+}
+
+.pure-form {
+    margin-top: 35px;
+}
