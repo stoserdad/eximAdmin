@@ -6,7 +6,9 @@ import tornado.ioloop
 import tornado.web
 import tornado.options
 import os.path
+import json
 from tornado.options import define, options
+from getFromDataBase import admin_list, domain_list
 
 define("port", default=8002, help="run on the given port", type=int)
 
@@ -44,8 +46,17 @@ class LoginHandler(BaseHandler):
 class LogoutHandler(BaseHandler):
 	def get(self):
 		self.clear_cookie("user")
-		self.redirect(self.reverse_url("main"))
-		# self.redirect(self.get_argument("next", self.reverse_url("main")))
+		self.redirect(self.get_argument("next", self.reverse_url("login")))
+
+
+class AdminHandler(tornado.web.RequestHandler):
+	def get(self):
+		self.write(json.dumps(admin_list()))
+
+
+class DomainHandler(tornado.web.RequestHandler):
+	def get(self):
+		self.write(json.dumps(domain_list()))
 
 
 class Application(tornado.web.Application):
@@ -61,10 +72,12 @@ class Application(tornado.web.Application):
 		}
 
 		tornado.web.Application.__init__(self, [
-			tornado.web.url(r"/", MainHandler, name="main"),
+			tornado.web.url(r'/', MainHandler, name="main"),
 			tornado.web.url(r'/login', LoginHandler, name="login"),
 			tornado.web.url(r'/logout', LogoutHandler, name="logout"),
 			tornado.web.url(r'/static/(.*)', tornado.web.StaticFileHandler),
+			tornado.web.url(r'/admin-list', AdminHandler, name="admin-list"),
+			tornado.web.url(r'/domain-list', DomainHandler, name="domain-list"),
 		], **settings)
 
 

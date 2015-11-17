@@ -16,3 +16,8 @@ body {
 .pure-form {
     margin-top: 35px;
 }
+
+.header {
+    position: fixed;
+    left: 50%;
+}
