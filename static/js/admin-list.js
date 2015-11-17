@@ -20,7 +20,7 @@ $(function() {
                             '<td>Последнее изменение</td>' +
                             '<td>Активен</td>';
                         $.each(objAdminList, function (index, value) {
-                            var timeStamp = new Date(value.created * 1000);
+                            var timeStamp = new Date(value.modified * 1000);
                             table += '<tr>' +
                                      '<td>' + value.username + '</td>' +
                                      '<td>' + (value.domain == 'ALL' ? 'Супер админ' : value.domain) + '</td>' +
@@ -114,19 +114,24 @@ $(function() {
                                 error = true;
                         }
 
+                        var data = {
+                                mail: valueMail,
+                                pass: valuePass,
+                                domain: valueDomain
+                        };
+
                         if (!error) {
                             $.ajax(
                                 {
                                     url: '/admin-create',
                                     type: 'POST',
                                     cache: false,
-                                    data: {
-                                        mail: valueMail,
-                                        pass: valuePass,
-                                        domain: valueDomain
+                                    headers: {
+                                        "X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]
                                     },
+                                    data: JSON.stringify(data),
                                     success: function (jsResponse) {
-                                        $('#result').text('OK!');
+                                        $('#result').text(jsResponse);
                                     },
                                     error: function () {
                                         $('#result').text('Error, something wrong');

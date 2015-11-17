@@ -9,6 +9,3 @@ def pass_crypt(passw, pass_db=''):
 			return 'ok'
 	else:
 		return md5_crypt.encrypt(passw, salt_size=8)
-
-
-print pass_crypt('tnbifvfnm', '$1$enkmp2xq$xthy2kqMSkTzJZ4fGGy3d1')

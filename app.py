@@ -7,8 +7,9 @@ import tornado.web
 import tornado.options
 import os.path
 import json
+from tornado.escape import json_decode
 from tornado.options import define, options
-from getFromDataBase import admin_list, domain_list
+from getFromDataBase import admin_list, domain_list, admin_create
 
 define("port", default=8002, help="run on the given port", type=int)
 
@@ -59,6 +60,16 @@ class DomainHandler(tornado.web.RequestHandler):
 		self.write(json.dumps(domain_list()))
 
 
+class AdminCreateHandler(tornado.web.RequestHandler):
+	def post(self):
+		print (self.request.body)
+		json_obj = json_decode(self.request.body)
+		username = json_obj['mail'].strip()
+		password = json_obj['pass'].strip()
+		domain = json_obj['domain'].strip()
+		self.write(json.dumps(admin_create(username, password, domain)))
+
+
 class Application(tornado.web.Application):
 	def __init__(self):
 		base_dir = os.path.dirname(__file__)
@@ -78,6 +89,7 @@ class Application(tornado.web.Application):
 			tornado.web.url(r'/static/(.*)', tornado.web.StaticFileHandler),
 			tornado.web.url(r'/admin-list', AdminHandler, name="admin-list"),
 			tornado.web.url(r'/domain-list', DomainHandler, name="domain-list"),
+			tornado.web.url(r'/admin-create', AdminCreateHandler, name="admin-create"),
 		], **settings)
 
 
