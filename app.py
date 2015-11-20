@@ -9,7 +9,7 @@ import os.path
 import json
 from tornado.escape import json_decode
 from tornado.options import define, options
-from getFromDataBase import admin_list, domain_list, admin_create
+from getFromDataBase import *
 
 define("port", default=8002, help="run on the given port", type=int)
 
@@ -60,14 +60,40 @@ class DomainHandler(tornado.web.RequestHandler):
 		self.write(json.dumps(domain_list()))
 
 
+class DomainOneHandler(tornado.web.RequestHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		print json_obj
+		self.write(json.dumps(domain_list(json_obj['domain'])))
+
+
 class AdminCreateHandler(tornado.web.RequestHandler):
 	def post(self):
 		print (self.request.body)
 		json_obj = json_decode(self.request.body)
 		username = json_obj['mail'].strip()
 		password = json_obj['pass'].strip()
+		# domain = json_obj['domain'].strip()
+		self.write(json.dumps(admin_create(username, password)))
+
+
+class DomainCreateHandler(tornado.web.RequestHandler):
+	def post(self):
+		print (self.request.body)
+		json_obj = json_decode(self.request.body)
 		domain = json_obj['domain'].strip()
-		self.write(json.dumps(admin_create(username, password, domain)))
+		description = json_obj['descr'].strip()
+		alias = json_obj['alias'].strip()
+		box = json_obj['box'].strip()
+		quota = json_obj['quota'].strip()
+		self.write(json.dumps(domain_create(domain, description, alias, box, quota)))
+
+
+class DomainActiveEditHandler(tornado.web.RequestHandler):
+	def post(self):
+		print self.request.body
+		json_obj = json_decode(self.request.body)
+		domain_active_edit(json_obj['dom'], json_obj['val'])
 
 
 class Application(tornado.web.Application):
@@ -89,7 +115,10 @@ class Application(tornado.web.Application):
 			tornado.web.url(r'/static/(.*)', tornado.web.StaticFileHandler),
 			tornado.web.url(r'/admin-list', AdminHandler, name="admin-list"),
 			tornado.web.url(r'/domain-list', DomainHandler, name="domain-list"),
+			tornado.web.url(r'/domain-one', DomainOneHandler, name="domain-one"),
 			tornado.web.url(r'/admin-create', AdminCreateHandler, name="admin-create"),
+			tornado.web.url(r'/domain-create', DomainCreateHandler, name="domain-create"),
+			tornado.web.url(r'/domain-active-edit', DomainActiveEditHandler, name="domain-active-edit"),
 		], **settings)
 
 
