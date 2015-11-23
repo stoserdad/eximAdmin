@@ -14,16 +14,18 @@ $(function() {
                     var objAdminList = JSON.parse(jsAdminList);
                     if (objAdminList.length > 0) {
                         var table = '<table class="table-bordered table">';
-                        table += '<thead><tr>' +
+                        table += '<thead><tr class = "success">' +
                             '<td>Админ</td>' +
                             '<td>Последнее изменение</td>' +
-                            '<td>Активен</td></thead>';
+                            '<td>Активен</td>' +
+                            '<td colspan="1">&nbsp;</td></thead>';
                         $.each(objAdminList, function (index, value) {
                             var timeStamp = new Date(value.modified * 1000);
-                            table += '<tr>' +
+                            table += '<tr class="hilightoff" onmouseover="className= \'hilighton\';" onmouseout="className=\'hilightoff\';">' +
                                      '<td>' + value.username + '</td>' +
                                      '<td>' + timeStamp.toLocaleString() + '</td>' +
-                                     '<td>' + (value.active == 1 ? 'Да' : 'Нет') + '</td></tr>';
+                                     '<td>' + (value.active == 1 ? 'Да' : 'Нет') + '</td>' +
+                                     '<td><a href="#admin-remove" admin-remove="' + value.username + '">Удалить</td></tr>';
                         });
                         table += '</table>';
                         $('#result').append(table);
@@ -58,7 +60,6 @@ $(function() {
                     '</div>' +
                     '<div class="col-sm-4" id="passerror">' +
                     '</div></div>' +
-                    '<div class="form-group">' +
                     '<div class="form-group">' +
                     '<div class="col-sm-offset-2 col-sm-10">' +
                     '<button class="btn btn-success" id="admin-submit">Добавить</button>' +
@@ -109,7 +110,7 @@ $(function() {
                             },
                             data: JSON.stringify(data),
                             success: function (jsResponse) {
-                                $('#result').text(jsResponse);
+                                $('#admin-list').click();
                             },
                             error: function () {
                                 $('#result').text('Error, something wrong');
@@ -122,7 +123,27 @@ $(function() {
         event.preventDefault();
     });
 
-    $('#domain-list').click(function (event) {
+     $('body').on('click', '[admin-remove]', function(e) {
+        e.preventDefault();
+        var el = $(this);
+        var admin = el.attr('admin-remove');
+        console.log(admin);
+        $.ajax({
+            url: '/admin-remove',
+            type: 'POST',
+            cache: false,
+            headers: {"X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]},
+            data: JSON.stringify({admin: admin}),
+            success: function(){
+                $('#admin-list').click();
+            },
+            error: function(){
+                $('#result').text('Error, something wrong');
+            }
+        });
+    });
+
+    $('#domain-list').click(function(event) {
         $('#result').empty();
         $.ajax(
             {
@@ -133,7 +154,7 @@ $(function() {
                     var objDomainList = JSON.parse(jsDomainList);
                     if (objDomainList.length > 0) {
                         var table = '<table class="table-bordered table">';
-                        table += '<thead><tr>' +
+                        table += '<thead><tr class = "success">' +
                                  '<td>Домен</td>' +
                                  '<td>Описание</td>' +
                                  '<td>Алиасы</td>' +
@@ -144,7 +165,7 @@ $(function() {
                         $.each(objDomainList, function (index, value) {
                             if (value.domain == 'ALL') return true;
                             var timeStamp = new Date(value.modified*1000);
-                            table += '<tr>' +
+                            table += '<tr class="hilightoff" onmouseover="className= \'hilighton\';" onmouseout="className=\'hilightoff\';">' +
                                      '<td>' + value.domain + '</td>' +
                                      '<td>' + value.description + '</td>' +
                                      '<td>' + value.alias_used + ' / ' + value.aliases + '</td>' +
@@ -272,7 +293,7 @@ $(function() {
                             },
                             data: JSON.stringify(data),
                             success: function (jsResponse) {
-                                $('#result').text(jsResponse);
+                                $('#domain-list').click();
                             },
                             error: function () {
                                 $('#result').text('Error, something wrong');
@@ -306,71 +327,429 @@ $(function() {
             data: JSON.stringify({val: dsend,
                                   dom: domain
                                 })
-        })
+        });
     });
 
-    $('body').on('click', '[data-edit]', function(e){
+    $('body').on('click', '[data-edit]', function(e) {
         e.preventDefault();
+        $('#result').empty();
         var el = $(this);
         var domain = el.attr('data-edit');
         $.ajax(
             {
-                url:    '/domain-one',
-                type:   'POST',
-                cache:  false,
+                url: '/domain-one',
+                type: 'POST',
+                cache: false,
                 headers: {
                     "X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]
                 },
                 data: JSON.stringify({domain: domain}),
-                success: function(jsDomainList) {
+                success: function (jsDomainList) {
                     var objDomainList = JSON.parse(jsDomainList);
-                    console.log(objDomainList[0]['domain']);
+                    var form = '<form class="form-horizontal">';
+                    form += '<div class="form-group">' +
+                        '<label for="domain" class="col-sm-2 control-label">Домен:</label>' +
+                        '<div class="col-sm-4">' +
+                        '<span>' + domain + '</span>' +
+                        '</div></div>' +
+                        '<div class="form-group">' +
+                        '<label for="descr" class="col-sm-2 control-label">Описание:</label>' +
+                        '<div class="col-sm-4">' +
+                        '<input type="text" class="form-control" id="descr" value="' + objDomainList[0]['description'] + '">' +
+                        '</div></div>' +
+                        '<div class="form-group">' +
+                        '<label for="alias" class="col-sm-2 control-label">Алиасы:</label>' +
+                        '<div class="col-sm-4">' +
+                        '<input type="text" class="form-control" id="alias" value="' + objDomainList[0]['aliases'] + '">' +
+                        '</div>' +
+                        '<div class="col-sm-4" id="alias_error"><span>-1 = отключить | 0 = неограниченное</span>' +
+                        '</div></div>' +
+                        '<div class="form-group">' +
+                        '<label for="box" class="col-sm-2 control-label">Ящики:</label>' +
+                        '<div class="col-sm-4">' +
+                        '<input type="text" class="form-control" id="box" value="' + objDomainList[0]['mailboxes'] + '">' +
+                        '</div>' +
+                        '<div class="col-sm-4" id="box_error"><span>-1 = отключить | 0 = неограниченное</span>' +
+                        '</div></div>' +
+                        '<div class="form-group">' +
+                        '<label for="quota" class="col-sm-2 control-label">Квота:</label>' +
+                        '<div class="col-sm-4">' +
+                        '<input type="text" class="form-control" id="quota" value="' + objDomainList[0]['quota'] + '">' +
+                        '</div>' +
+                        '<div class="col-sm-4" id="quota_error"><span>-1 = отключить | 0 = неограниченное</span>' +
+                        '</div></div>' +
+                        '<div class="form-group">' +
+                        '<div class="col-sm-offset-2 col-sm-10">' +
+                        '<button class="btn btn-success" id="domain-edit-submit">Редактировать</button>' +
+                        '</div></div>' +
+                        '</form>';
+                    $('#result').append(form);
+                            $('#domain-edit-submit').click(function(event) {
+                                var descr = $('#descr').val();
+                                var alias = $('#alias').val();
+                                var box = $('#box').val();
+                                var quota = $('#quota').val();
+                                var re_digit = /\b\d+\b/;
+                                var error = false;
+
+                                if (alias === '') {
+                                    $('#alias_error').empty();
+                                    $('#alias_error').append('<span class="error_msg">Поле не может быть пустым! </span>');
+                                    error = true;
+                                } else if (!re_digit.exec(alias)) {
+                                    $('#alias_error').empty();
+                                    $('#alias_error').append('<span class="error_msg">Это должны быть цифры! </span>');
+                                    error = true;
+                                }
+                                if (box === '') {
+                                    $('#box_error').empty();
+                                    $('#box_error').append('<span class="error_msg">Поле не может быть пустым! </span>');
+                                    error = true;
+                                } else if (!re_digit.exec(box)) {
+                                    $('#box_error').empty();
+                                    $('#box_error').append('<span class="error_msg">Это должны быть цифры! </span>');
+                                    error = true;
+                                }
+                                if (quota === '') {
+                                    $('#quota_error').empty();
+                                    $('#quota_error').append('<span class="quota_msg">Поле не может быть пустым! </span>');
+                                    error = true;
+                                } else if (!re_digit.exec(box)) {
+                                    $('#quota_error').empty();
+                                    $('#quota_error').append('<span class="quota_msg">Это должны быть цифры! </span>');
+                                    error = true;
+                                }
+                                var data = {
+                                    description: descr,
+                                    aliases: alias,
+                                    boxes: box,
+                                    quota: quota,
+                                    domain: domain
+                                };
+                                if (!error) {
+                                    $.ajax({
+                                        url: '/domain-edit',
+                                        headers: {
+                                            "X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]
+                                        },
+                                        type: 'POST',
+                                        cache: false,
+                                        data: JSON.stringify(data),
+                                        success: function () {
+                                            $('#domain-list').click();
+                                        },
+                                        error: function () {
+                                            $('#result').text('Error, something wrong');
+                                        }
+                                    });
+                                }
+                                event.preventDefault();
+                            });
                 },
-                error: function() {
+                error: function () {
+                    $('#result').text('Error, something wrong');
+                }
+            });
+    });
+
+    $('body').on('click', '[data-remove]', function(e) {
+        e.preventDefault();
+        var el = $(this);
+        var domain = el.attr('data-remove');
+        console.log(domain);
+        $.ajax({
+            url: '/domain-remove',
+            type: 'POST',
+            cache: false,
+            headers: {
+                "X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]
+            },
+            data: JSON.stringify({domain: domain}),
+            success: function(){
+                $('#domain-list').click();
+            },
+            error: function(){
+                $('#result').text('Error, something wrong');
+            }
+        });
+    });
+
+    $('#blacklist').click(function(event){
+        $('#result').empty();
+        $.ajax({
+            url: '/blacklist',
+            type: 'GET',
+            cache: false,
+            success: function(jsBlackList){
+                var objBlackList = JSON.parse(jsBlackList);
+                if (objBlackList.length > 0) {
+                    var table = '<table class="table-bordered table">';
+                    table += '<thead><tr class = "success">' +
+                        '<td>Адрес</td>' +
+                        '<td>Добавлен</td>' +
+                        '<td colspan="1">&nbsp;</td></thead>';
+                    $.each(objBlackList, function (index, value) {
+                        var timeStamp = new Date(value.when_add * 1000);
+                        table += '<tr class="hilightoff" onmouseover="className= \'hilighton\';" onmouseout="className=\'hilightoff\';">' +
+                            '<td>' + value.senders + '</td>' +
+                            '<td>' + timeStamp.toLocaleDateString() + '</td>' +
+                            '<td><a href="#b-remove" b-remove="' + value.senders + '">Удалить</td></tr>';
+                    });
+                    table += '</table>';
+                }
+                $('#result').append(table);
+            },
+            error: function(){
+                $('#result').text('Error, something wrong');
+            }
+        });
+        event.preventDefault();
+    });
+
+    $('#whitelist').click(function(event){
+        $('#result').empty();
+        $.ajax({
+            url: '/whitelist',
+            type: 'GET',
+            cache: false,
+            success: function(jsWhiteList){
+                var objWhiteList = JSON.parse(jsWhiteList);
+                if (objWhiteList.length > 0) {
+                    var table = '<table class="table-bordered table">';
+                    table += '<thead><tr class = "success">' +
+                        '<td>Адрес</td>' +
+                        '<td>Добавлен</td>' +
+                        '<td colspan="1">&nbsp;</td></thead>';
+                    $.each(objWhiteList, function (index, value) {
+                        var timeStamp = new Date(value.when_add * 1000);
+                        table += '<tr class="hilightoff" onmouseover="className= \'hilighton\';" onmouseout="className=\'hilightoff\';">' +
+                            '<td>' + value.senders + '</td>' +
+                            '<td>' + timeStamp.toLocaleDateString() + '</td>' +
+                            '<td><a href="#w-remove" w-remove="' + value.senders + '">Удалить</td></tr>';
+                    });
+                    table += '</table>';
+                    $('#result').append(table);
+                }
+            },
+            error: function(){
+                $('#result').text('Error, something wrong');
+            }
+        });
+        event.preventDefault();
+    });
+
+    $('body').on('click', '[b-remove]', function(e) {
+        e.preventDefault();
+        var el = $(this);
+        var sender = el.attr('b-remove');
+        console.log(sender);
+        $.ajax({
+            url: '/b-remove',
+            type: 'POST',
+            cache: false,
+            headers: {
+                "X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]
+            },
+            data: JSON.stringify({sender: sender}),
+            success: function(){
+                $('#blacklist').click();
+            },
+            error: function(){
+                $('#result').text('Error, something wrong');
+            }
+        });
+    });
+
+    $('body').on('click', '[w-remove]', function(e) {
+        e.preventDefault();
+        var el = $(this);
+        var sender = el.attr('w-remove');
+        console.log(sender);
+        $.ajax({
+            url: '/w-remove',
+            type: 'POST',
+            cache: false,
+            headers: {
+                "X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]
+            },
+            data: JSON.stringify({sender: sender}),
+            success: function(){
+                $('#whitelist').click();
+            },
+            error: function(){
+                $('#result').text('Error, something wrong');
+            }
+        });
+    });
+
+    $('#add-blacklist').click(function (event) {
+        $('#result').empty();
+        var form = '<form class="form-horizontal">';
+            form += '<div class="form-group">' +
+                    '<label for="mail" class="col-sm-2 control-label">Адрес:</label>' +
+                    '<div class="col-sm-4">' +
+                    '<input type="text" class="form-control" id="email" placeholder="Email или Host">' +
+                    '</div>' +
+                    '<div class="col-sm-4" id="email_error">' +
+                    '</div></div>' +
+                    '<div class="form-group">' +
+                    '<div class="col-sm-offset-2 col-sm-10">' +
+                    '<button class="btn btn-success" id="b-submit">Добавить</button>' +
+                    '</div></div>' +
+                    '</form>';
+        $('#result').append(form);
+
+        $('#b-submit').click(function (event) {
+            $('#email_error').empty();
+            var error = false;
+            var valueMail = $('#email').val();
+
+                if (valueMail === '') {
+                    $('#email_error').append('<span class="error_msg">Поле не может быть пустым! </span>');
+                    error = true;
+                }
+
+                if (!error) {
+                    $.ajax(
+                        {
+                            url: '/b-add',
+                            type: 'POST',
+                            cache: false,
+                            headers: {
+                                "X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]
+                            },
+                            data: JSON.stringify({email: valueMail}),
+                            success: function () {
+                                $('#blacklist').click();
+                            },
+                            error: function () {
+                                $('#result').text('Error, something wrong');
+                            }
+                        }
+                    );
+                }
+                event.preventDefault();
+            });
+        event.preventDefault();
+    });
+
+        $('#add-whitelist').click(function (event) {
+        $('#result').empty();
+        var form = '<form class="form-horizontal">';
+            form += '<div class="form-group">' +
+                    '<label for="mail" class="col-sm-2 control-label">Адрес:</label>' +
+                    '<div class="col-sm-4">' +
+                    '<input type="text" class="form-control" id="email" placeholder="Email или Host">' +
+                    '</div>' +
+                    '<div class="col-sm-4" id="email_error">' +
+                    '</div></div>' +
+                    '<div class="form-group">' +
+                    '<div class="col-sm-offset-2 col-sm-10">' +
+                    '<button class="btn btn-success" id="w-submit">Добавить</button>' +
+                    '</div></div>' +
+                    '</form>';
+        $('#result').append(form);
+
+        $('#w-submit').click(function (event) {
+            $('#email_error').empty();
+            var error = false;
+            var valueMail = $('#email').val();
+
+                if (valueMail === '') {
+                    $('#email_error').append('<span class="error_msg">Поле не может быть пустым! </span>');
+                    error = true;
+                }
+
+                if (!error) {
+                    $.ajax(
+                        {
+                            url: '/w-add',
+                            type: 'POST',
+                            cache: false,
+                            headers: {"X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]},
+                            data: JSON.stringify({email: valueMail}),
+                            success: function () {
+                                $('#whitelist').click();
+                            },
+                            error: function () {
+                                $('#result').text('Error, something wrong');
+                            }
+                        }
+                    );
+                }
+                event.preventDefault();
+            });
+        event.preventDefault();
+    });
+
+    $('#boxes').click(function(event){
+        $('#result').empty();
+        $.ajax(
+            {
+                url: '/boxes',
+                type: 'GET',
+                cache: false,
+                success: function (jsBoxes) {
+                    var objBoxes = JSON.parse(jsBoxes);
+                    if (objBoxes.length > 0) {
+                        var mtable = '<table class="table-bordered table">';
+                        mtable += '<thead><tr class = "success">' +
+                            '<td>Ящик</td>' +
+                            '<td>Имя</td>' +
+                            '<td>Последнее изменение</td>' +
+                            '<td>Активен</td>' +
+                            '<td colspan="2">&nbsp;</td></thead>';
+                        $.each(objBoxes, function (index, value) {
+                            var timeStamp = new Date(value.modified * 1000);
+                            mtable += '<tr class="hilightoff" onmouseover="className= \'hilighton\';" onmouseout="className=\'hilightoff\';">' +
+                                     '<td>' + value.username + '</td>' +
+                                     '<td>' + value.name + '</td>' +
+                                     '<td>' + timeStamp.toLocaleString() + '</td>' +
+                                     '<td>' + (value.active == 1 ? 'Да' : 'Нет') + '</td>' +
+                                     '<td><a href="#box-edit" box-edit="' + value.username + '">Реактировать</a></td>' +
+                                     '<td><a href="#box-remove" box-remove="' + value.username + '">Удалить</td></tr>';
+                        });
+                        mtable += '</table>';
+                        $('#result').append(mtable);
+                    }
+                },
+                error: function () {
                     $('#result').text('Error, something wrong');
                 }
         });
-
-
-        var form = '<form class="form-horizontal">';
-                    form += '<div class="form-group">' +
-                            '<label for="domain" class="col-sm-2 control-label">Домен:</label>' +
-                            '<div class="col-sm-4">' +
-                            '<span>' + domain + '</span>' +
-                            '</div></div>' +
-                            '<div class="form-group">' +
-                            '<label for="descr" class="col-sm-2 control-label">Описание:</label>' +
-                            '<div class="col-sm-4">' +
-                            '<input type="text" class="form-control" id="descr" placeholder="Описание">' +
-                            '</div></div>' +
-                            '<div class="form-group">' +
-                            '<label for="alias" class="col-sm-2 control-label">Алиасы:</label>' +
-                            '<div class="col-sm-4">' +
-                            '<input type="text" class="form-control" id="alias" placeholder="-1 = отключить | 0 = неограниченное">' +
-                            '</div>' +
-                            '<div class="col-sm-4" id="alias_error">' +
-                            '</div></div>' +
-                            '<div class="form-group">' +
-                            '<label for="box" class="col-sm-2 control-label">Ящики:</label>' +
-                            '<div class="col-sm-4">' +
-                            '<input type="text" class="form-control" id="box" placeholder="-1 = отключить | 0 = неограниченное">' +
-                            '</div>' +
-                            '<div class="col-sm-4" id="box_error">' +
-                            '</div></div>' +
-                            '<div class="form-group">' +
-                            '<label for="quota" class="col-sm-2 control-label">Квота:</label>' +
-                            '<div class="col-sm-4">' +
-                            '<input type="text" class="form-control" id="quota" placeholder="0 = неограничено">' +
-                            '</div>' +
-                            '<div class="col-sm-4" id="quota_error">' +
-                            '</div></div>' +
-                            '<div class="form-group">' +
-                            '<div class="col-sm-offset-2 col-sm-10">' +
-                            '<button class="btn btn-success" id="domain-submit">Добавить</button>' +
-                            '</div></div>' +
-                            '</form>';
-        //$('#result').append(form);
-
+        $.ajax(
+            {
+                url: '/aliases',
+                type: 'GET',
+                cache: false,
+                success: function (jsAliases) {
+                    var objAliases = JSON.parse(jsAliases);
+                    if (objAliases.length > 0) {
+                        var atable = '<table class="table-bordered table">';
+                        atable += '<thead><tr class = "success">' +
+                            '<td>От</td>' +
+                            '<td>Кому</td>' +
+                            '<td>Последнее изменение</td>' +
+                            '<td>Активен</td>' +
+                            '<td colspan="2">&nbsp;</td></thead>';
+                        $.each(objAliases, function (index, value) {
+                            var timeStamp = new Date(value.modified * 1000);
+                            atable += '<tr class="hilightoff" onmouseover="className= \'hilighton\';" onmouseout="className=\'hilightoff\';">' +
+                                     '<td>' + value.address + '</td>' +
+                                     '<td>' + value.goto.replace(',', '<br>') + '</td>' +
+                                     '<td>' + timeStamp.toLocaleString() + '</td>' +
+                                     '<td>' + (value.active == 1 ? 'Да' : 'Нет') + '</td>' +
+                                     '<td><a href="#alias-edit" alias-edit="' + value.address + '">Реактировать</a></td>' +
+                                     '<td><a href="#alias-remove" alias-remove="' + value.address + '">Удалить</td></tr>';
+                        });
+                        atable += '</table>';
+                        $('#result').append(atable);
+                    }
+                },
+                error: function () {
+                    $('#result').text('Error, something wrong');
+                }
+        });
+        event.preventDefault();
     });
-
 });

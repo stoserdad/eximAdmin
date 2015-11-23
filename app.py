@@ -63,8 +63,13 @@ class DomainHandler(tornado.web.RequestHandler):
 class DomainOneHandler(tornado.web.RequestHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
-		print json_obj
 		self.write(json.dumps(domain_list(json_obj['domain'])))
+
+
+class DomainEditHandler(tornado.web.RequestHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		domain_edit(json_obj['domain'], json_obj['description'], json_obj['aliases'], json_obj['boxes'], json_obj['quota'])
 
 
 class AdminCreateHandler(tornado.web.RequestHandler):
@@ -73,13 +78,11 @@ class AdminCreateHandler(tornado.web.RequestHandler):
 		json_obj = json_decode(self.request.body)
 		username = json_obj['mail'].strip()
 		password = json_obj['pass'].strip()
-		# domain = json_obj['domain'].strip()
 		self.write(json.dumps(admin_create(username, password)))
 
 
 class DomainCreateHandler(tornado.web.RequestHandler):
 	def post(self):
-		print (self.request.body)
 		json_obj = json_decode(self.request.body)
 		domain = json_obj['domain'].strip()
 		description = json_obj['descr'].strip()
@@ -91,9 +94,64 @@ class DomainCreateHandler(tornado.web.RequestHandler):
 
 class DomainActiveEditHandler(tornado.web.RequestHandler):
 	def post(self):
-		print self.request.body
 		json_obj = json_decode(self.request.body)
 		domain_active_edit(json_obj['dom'], json_obj['val'])
+
+
+class DomainRemoveHandler(tornado.web.RequestHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		domain_remove(json_obj['domain'])
+
+
+class AdminRemoveHandler(tornado.web.RequestHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		admin_remove(json_obj['admin'])
+
+
+class BlacklistHandler(tornado.web.RequestHandler):
+	def get(self):
+		self.write(json.dumps(black_list()))
+
+
+class WhitelistHandler(tornado.web.RequestHandler):
+	def get(self):
+		self.write(json.dumps(white_list()))
+
+
+class BRemoveHandler(tornado.web.RequestHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		b_remove(json_obj['sender'])
+
+
+class WRemoveHandler(tornado.web.RequestHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		w_remove(json_obj['sender'])
+
+
+class BAddHandler(tornado.web.RequestHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		b_add(json_obj['email'])
+
+
+class WAddHandler(tornado.web.RequestHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		w_add(json_obj['email'])
+
+
+class BoxesHandler(tornado.web.RequestHandler):
+	def get(self):
+		self.write(json.dumps(boxes()))
+
+
+class AliasHandler(tornado.web.RequestHandler):
+	def get(self):
+		self.write(json.dumps(aliases()))
 
 
 class Application(tornado.web.Application):
@@ -117,8 +175,19 @@ class Application(tornado.web.Application):
 			tornado.web.url(r'/domain-list', DomainHandler, name="domain-list"),
 			tornado.web.url(r'/domain-one', DomainOneHandler, name="domain-one"),
 			tornado.web.url(r'/admin-create', AdminCreateHandler, name="admin-create"),
+			tornado.web.url(r'/admin-remove', AdminRemoveHandler, name="admin-remove"),
 			tornado.web.url(r'/domain-create', DomainCreateHandler, name="domain-create"),
+			tornado.web.url(r'/domain-edit', DomainEditHandler, name="domain-edit"),
+			tornado.web.url(r'/domain-remove', DomainRemoveHandler, name="domain-remove"),
+			tornado.web.url(r'/b-remove', BRemoveHandler, name="b-remove"),
+			tornado.web.url(r'/w-remove', WRemoveHandler, name="w-remove"),
+			tornado.web.url(r'/b-add', BAddHandler, name="b-add"),
+			tornado.web.url(r'/w-add', WAddHandler, name="w-add"),
 			tornado.web.url(r'/domain-active-edit', DomainActiveEditHandler, name="domain-active-edit"),
+			tornado.web.url(r'/blacklist', BlacklistHandler, name="blacklist"),
+			tornado.web.url(r'/whitelist', WhitelistHandler, name="whitelist"),
+			tornado.web.url(r'/boxes', BoxesHandler, name="boxes"),
+			tornado.web.url(r'/aliases', AliasHandler, name="aliases"),
 		], **settings)
 
 

@@ -31,15 +31,21 @@
                         <li class="dropdown">
                             <a href="#" data-toggle="dropdown" class="dropdown-toggle">Обзор</a>
                             <ul class="dropdown-menu">
-                                <li><a href="#">Обзор</a></li>
-                                <li><a href="#">Создать ящик</a></li>
-                                <li><a href="#">Создать алиас</a></li>
-                                <li><a href="#">Создать домен-алиас</a></li>
+                                <li><a href="#boxes" id="boxes">Обзор</a></li>
+                                <li><a href="#add-boxes" id="add-boxes">Создать ящик</a></li>
+                                <li><a href="#add-alias" id="add-alias">Создать алиас</a></li>
+                            </ul>
+                        </li>
+                        <li class="dropdown">
+                            <a href="#" data-toggle="dropdown" class="dropdown-toggle">Спам</a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#blacklist" id="blacklist">Blacklist</a></li>
+                                <li><a href="#add-blacklist" id="add-blacklist">Добавить в Blacklist</a></li>
+                                <li><a href="#whitelist" id="whitelist">Whitelist</a></li>
+                                <li><a href="#add-whitelist" id="add-whitelist">Добавить в Whitelist</a></li>
                             </ul>
                         </li>
                         <li><a href="#">Пароль</a></li>
-                        <li><a href="#">Бекап</a></li>
-                        <li><a href="#">Просмотреть журнал</a></li>
                         <li><a>Вы зашли как: [ {{ user }} ]</a></li>
                         <li><a href="/logout">Выход</a></li>
                     </ul>
@@ -50,4 +56,3 @@
     <div id="result" class="container"></div>
     </body>
 </html>
-
