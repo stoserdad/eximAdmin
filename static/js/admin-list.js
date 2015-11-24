@@ -109,7 +109,7 @@ $(function() {
                                 "X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]
                             },
                             data: JSON.stringify(data),
-                            success: function (jsResponse) {
+                            success: function () {
                                 $('#admin-list').click();
                             },
                             error: function () {
@@ -350,7 +350,7 @@ $(function() {
                     form += '<div class="form-group">' +
                         '<label for="domain" class="col-sm-2 control-label">Домен:</label>' +
                         '<div class="col-sm-4">' +
-                        '<span>' + domain + '</span>' +
+                        '<p class="form-control-static">' + domain + '</p>' +
                         '</div></div>' +
                         '<div class="form-group">' +
                         '<label for="descr" class="col-sm-2 control-label">Описание:</label>' +
@@ -705,7 +705,7 @@ $(function() {
                                      '<td>' + value.username + '</td>' +
                                      '<td>' + value.name + '</td>' +
                                      '<td>' + timeStamp.toLocaleString() + '</td>' +
-                                     '<td>' + (value.active == 1 ? 'Да' : 'Нет') + '</td>' +
+                                     '<td><a href="#box-active" box-active="' + value.username + '">' + (value.active == 1 ? 'Да' : 'Нет') + '</td>' +
                                      '<td><a href="#box-edit" box-edit="' + value.username + '">Реактировать</a></td>' +
                                      '<td><a href="#box-remove" box-remove="' + value.username + '">Удалить</td></tr>';
                         });
@@ -738,7 +738,7 @@ $(function() {
                                      '<td>' + value.address + '</td>' +
                                      '<td>' + value.goto.replace(',', '<br>') + '</td>' +
                                      '<td>' + timeStamp.toLocaleString() + '</td>' +
-                                     '<td>' + (value.active == 1 ? 'Да' : 'Нет') + '</td>' +
+                                     '<td><a href="#alias-active" alias-active="' + value.address + '">' + (value.active == 1 ? 'Да' : 'Нет') + '</td>' +
                                      '<td><a href="#alias-edit" alias-edit="' + value.address + '">Реактировать</a></td>' +
                                      '<td><a href="#alias-remove" alias-remove="' + value.address + '">Удалить</td></tr>';
                         });
@@ -751,5 +751,153 @@ $(function() {
                 }
         });
         event.preventDefault();
+    });
+
+    $('body').on('click','[box-active]',function(e){
+        e.preventDefault();
+        var el = $(this);
+        var current = el.text();
+        if (current === 'Да') {
+            el.text('Нет');
+        } else if (current === 'Нет') {
+            el.text('Да');
+        }
+        var dsend = current === 'Да' ? 0 : 1;
+        var box = el.attr('box-active');
+        $.ajax({
+            url: '/box-active',
+            type: 'POST',
+            cache:  false,
+            headers: {"X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]},
+            data: JSON.stringify({val: dsend,
+                                  box: box
+                                })
+        });
+    });
+
+    $('body').on('click','[alias-active]',function(e){
+        e.preventDefault();
+        var el = $(this);
+        var current = el.text();
+        if (current === 'Да') {
+            el.text('Нет');
+        } else if (current === 'Нет') {
+            el.text('Да');
+        }
+        var dsend = current === 'Да' ? 0 : 1;
+        var address = el.attr('alias-active');
+        $.ajax({
+            url: '/alias-active',
+            type: 'POST',
+            cache:  false,
+            headers: {"X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]},
+            data: JSON.stringify({val: dsend,
+                                  address: address
+                                })
+        });
+    });
+
+    $('#add-box').click(function(event){
+        $('#result').empty();
+        $('#message').empty();
+        $.ajax(
+            {
+                url: '/domain-list',
+                type: 'GET',
+                cache: false,
+                success: function (jsDomainList) {
+                    var objDomainList = JSON.parse(jsDomainList);
+                    var options ='';
+                    $.each(objDomainList, function (index, value) {
+                        if (value.domain === 'ALL') {
+                            return true;
+                        }
+                        options += '<option>' + value.domain + '</option>';
+                    });
+                    var form = '<form class="form-horizontal">';
+                    form += '<div class="form-group">' +
+                        '<label for="domain" class="col-sm-2 control-label">Название:</label>' +
+                        '<div class="col-sm-4">' +
+                        '<input type="text" class="form-control" id="mail" placeholder="Название">' +
+                        '</div>' +
+                        '<div class="col-sm-2">' +
+                        '<select class="form-control" id="domain">' +
+                        options +
+                        '</select>' +
+                        '</div>' +
+                        '<div class="col-sm-4" id="mail_error">' +
+                        '</div></div>' +
+                        '<div class="form-group">' +
+                        '<label for="pass" class="col-sm-2 control-label">Пароль:</label>' +
+                        '<div class="col-sm-4">' +
+                        '<input type="password" class="form-control" id="pass" placeholder="Пароль">' +
+                         '</div>' +
+                        '<div class="col-sm-4" id="pass_error">' +
+                        '</div></div>' +
+                        '<div class="form-group">' +
+                        '<label for="pass2" class="col-sm-2 control-label">Пароль (еще раз):</label>' +
+                        '<div class="col-sm-4">' +
+                        '<input type="password" class="form-control" id="pass2" placeholder="Пароль">' +
+                        '</div>' +
+                        '<div class="col-sm-4" id="pass2_error">' +
+                        '</div></div>' +
+                        '<div class="form-group">' +
+                        '<label for="name" class="col-sm-2 control-label">Имя:</label>' +
+                        '<div class="col-sm-4">' +
+                        '<input type="text" class="form-control" id="name" placeholder="Имя владельца">' +
+                        '</div></div>' +
+                        '<div class="form-group">' +
+                        '<div class="col-sm-offset-2 col-sm-10">' +
+                        '<button class="btn btn-success" id="box-submit">Добавить</button>' +
+                        '</div></div>' +
+                        '</form>';
+                    $('#result').append(form);
+
+                    $('#box-submit').click(function(event){
+                        $('#pass_error').empty();
+                        $('#pass2_error').empty();
+                        var error = false;
+                        var mail = $('#mail').val() + '@' + $('#domain').val();
+                        var pass = $('#pass').val();
+                        var pass2 = $('#pass2').val();
+                        var name = $('#name').val();
+
+                        if (pass != pass2) {
+                            $('#pass2_error').append('<span class="error_msg">Пароли не совпадают! </span>');
+                            error = true;
+                        }
+                        if (pass === '' || pass2 === '') {
+                            $('#pass_error').append('<span class="error_msg">Пароль не может быть пустым! </span>');
+                            error = true;
+                        }
+                        var data = {
+                            mail: mail,
+                            pass: pass,
+                            name: name};
+                        if (!error){
+                            $.ajax(
+                            {
+                                url: '/box-create',
+                                type: 'POST',
+                                cache: false,
+                                headers: {"X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]},
+                                data: JSON.stringify(data),
+                                success: function (message) {
+                                    var text = message.indexOf('Duplicate entry') + 1 > 0 ? 'Такой ящик существует': 'Ящик создан';
+                                    //$('#message').text(text);
+                                    $('#boxes').click();
+                                },
+                                error: function () {
+                                    $('#result').text('Error, something wrong');
+                                }
+                            });
+                        }
+                        console.log(mail);
+                    event.preventDefault();
+                    });
+
+                }
+            });
+    event.preventDefault();
     });
 });

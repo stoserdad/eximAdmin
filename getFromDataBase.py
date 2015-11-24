@@ -129,3 +129,23 @@ def aliases():
 	alias = meta.tables['alias']
 	return [dict(row) for row in engine.execute(select([alias.c.address, alias.c.goto, func.unix_timestamp(alias.c.modified).label('modified'), alias.c.active]))]
 
+
+def box_active_edit(box, active):
+	mailbox = meta.tables['mailbox']
+	engine.execute(mailbox.update().where(mailbox.c.username == box).values(active=active, modified=datetime.now()))
+
+
+def alias_active_edit(address, active):
+	alias = meta.tables['alias']
+	engine.execute(alias.update().where(alias.c.address == address).values(active=active, modified=datetime.now()))
+
+
+def box_create(mail, password, name):
+	mailbox = meta.tables['mailbox']
+	try:
+		engine.execute(mailbox.insert(), username=mail, password=pass_crypt(password), name=name, maildir=mail, quota=0, local_part=mail.split('@')[0], domain=mail.split('@')[-1],
+					   created=datetime.now(), modified=datetime.now(), active=1)
+	except IntegrityError as e:
+		return e.orig[1]
+	return 'Host/email added'
+

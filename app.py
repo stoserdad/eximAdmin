@@ -154,6 +154,25 @@ class AliasHandler(tornado.web.RequestHandler):
 		self.write(json.dumps(aliases()))
 
 
+class MailBoxActiveEditHandler(tornado.web.RequestHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		box_active_edit(json_obj['box'], json_obj['val'])
+
+
+class AliasActiveEditHandler(tornado.web.RequestHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		alias_active_edit(json_obj['address'], json_obj['val'])
+
+
+class BoxCreateHandler(tornado.web.RequestHandler):
+	def post(self):
+		print (self.request.body)
+		json_obj = json_decode(self.request.body)
+		self.write(json.dumps(box_create(json_obj['mail'], json_obj['pass'], json_obj['name'])))
+
+
 class Application(tornado.web.Application):
 	def __init__(self):
 		base_dir = os.path.dirname(__file__)
@@ -188,6 +207,9 @@ class Application(tornado.web.Application):
 			tornado.web.url(r'/whitelist', WhitelistHandler, name="whitelist"),
 			tornado.web.url(r'/boxes', BoxesHandler, name="boxes"),
 			tornado.web.url(r'/aliases', AliasHandler, name="aliases"),
+			tornado.web.url(r'/box-active', MailBoxActiveEditHandler, name="box-active"),
+			tornado.web.url(r'/alias-active', AliasActiveEditHandler, name="alias-active"),
+			tornado.web.url(r'/box-create', BoxCreateHandler, name="box-create"),
 		], **settings)
 
 
