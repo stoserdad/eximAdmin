@@ -335,14 +335,11 @@ $(function() {
         $('#result').empty();
         var el = $(this);
         var domain = el.attr('data-edit');
-        $.ajax(
-            {
+        $.ajax({
                 url: '/domain-one',
                 type: 'POST',
                 cache: false,
-                headers: {
-                    "X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]
-                },
+                headers: {"X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]},
                 data: JSON.stringify({domain: domain}),
                 success: function (jsDomainList) {
                     var objDomainList = JSON.parse(jsDomainList);
@@ -429,9 +426,7 @@ $(function() {
                                 if (!error) {
                                     $.ajax({
                                         url: '/domain-edit',
-                                        headers: {
-                                            "X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]
-                                        },
+                                        headers: {"X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]},
                                         type: 'POST',
                                         cache: false,
                                         data: JSON.stringify(data),
@@ -633,7 +628,7 @@ $(function() {
         event.preventDefault();
     });
 
-        $('#add-whitelist').click(function (event) {
+    $('#add-whitelist').click(function (event) {
         $('#result').empty();
         var form = '<form class="form-horizontal">';
             form += '<div class="form-group">' +
@@ -799,9 +794,7 @@ $(function() {
 
     $('#add-box').click(function(event){
         $('#result').empty();
-        $('#message').empty();
-        $.ajax(
-            {
+        $.ajax({
                 url: '/domain-list',
                 type: 'GET',
                 cache: false,
@@ -852,7 +845,6 @@ $(function() {
                         '</div></div>' +
                         '</form>';
                     $('#result').append(form);
-
                     $('#box-submit').click(function(event){
                         $('#pass_error').empty();
                         $('#pass2_error').empty();
@@ -884,7 +876,7 @@ $(function() {
                                 data: JSON.stringify(data),
                                 success: function (message) {
                                     var text = message.indexOf('Duplicate entry') + 1 > 0 ? 'Такой ящик существует': 'Ящик создан';
-                                    //$('#message').text(text);
+                                    //alert(text);
                                     $('#boxes').click();
                                 },
                                 error: function () {
@@ -892,12 +884,271 @@ $(function() {
                                 }
                             });
                         }
-                        console.log(mail);
                     event.preventDefault();
                     });
-
                 }
             });
     event.preventDefault();
+    });
+
+    $('body').on('click', '[box-edit]', function(e){
+        e.preventDefault();
+        $('#result').empty();
+        var el = $(this);
+        var box = el.attr('box-edit');
+        $.ajax({
+            url: '/box-one',
+            type: 'POST',
+            cache: false,
+            data: JSON.stringify({username: box}),
+            headers: {"X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]},
+            success: function(box){
+                var obj_box = JSON.parse(box);
+                var form = '<form class="form-horizontal">';
+                    form += '<div class="form-group">' +
+                        '<label for="domain" class="col-sm-2 control-label">Название:</label>' +
+                        '<div class="col-sm-4">' +
+                        '<p class="form-control-static">' + obj_box[0].username + '</p>' +
+                        '</div></div>' +
+                        '<div class="form-group">' +
+                        '<label for="pass" class="col-sm-2 control-label">Пароль:</label>' +
+                        '<div class="col-sm-4">' +
+                        '<input type="password" class="form-control" id="pass" placeholder="Пароль">' +
+                         '</div>' +
+                        '<div class="col-sm-4" id="pass_error">' +
+                        '</div></div>' +
+                        '<div class="form-group">' +
+                        '<label for="pass2" class="col-sm-2 control-label">Пароль (еще раз):</label>' +
+                        '<div class="col-sm-4">' +
+                        '<input type="password" class="form-control" id="pass2" placeholder="Пароль">' +
+                        '</div>' +
+                        '<div class="col-sm-4" id="pass2_error">' +
+                        '</div></div>' +
+                        '<div class="form-group">' +
+                        '<label for="name" class="col-sm-2 control-label">Имя:</label>' +
+                        '<div class="col-sm-4">' +
+                        '<input type="text" class="form-control" id="name" value="' + obj_box[0].name + '">' +
+                        '</div></div>' +
+                        '<div class="form-group">' +
+                        '<div class="col-sm-offset-2 col-sm-10">' +
+                        '<button class="btn btn-success" id="box-submit">Редактировать</button>' +
+                        '</div></div>' +
+                        '</form>';
+                $('#result').append(form);
+                $('#box-submit').click(function(event){
+                    var error = false;
+                    var pass = $('#pass').val();
+                    var pass2 = $('#pass2').val();
+                    var name = $('#name').val();
+                    if (pass != pass2) {
+                        $('#pass2_error').append('<span class="error_msg">Пароли не совпадают! </span>');
+                        error = true;
+                    }
+                    if (!error) {
+                        $.ajax({
+                            url: '/box-edit',
+                            type: 'POST',
+                            cache: false,
+                            data: JSON.stringify({
+                                pass: pass,
+                                name: name,
+                                username: obj_box[0].username
+                            }),
+                            headers: {"X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]},
+                            success: function(){
+                                $('#boxes').click();
+                            },
+                            error: function(){
+                                $('#result').text('Error, something wrong');
+                            }
+                        });
+                    }
+                    event.preventDefault();
+                });
+            }
+        });
+    });
+
+    $('body').on('click', '[box-remove]', function(e){
+        e.preventDefault();
+        $('#result').empty();
+        var el = $(this);
+        var box = el.attr('box-remove');
+        $.ajax({
+            url: '/box-remove',
+            type: 'POST',
+            cache: false,
+            headers: {"X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]},
+            data: JSON.stringify({username: box}),
+            success: function(){
+                $('#boxes').click();
+            },
+            error: function(){
+                $('#result').text('Error, something wrong');
+            }
+        });
+    });
+
+    $('#add-alias').click(function(event){
+        $('#result').empty();
+        $.ajax({
+            url: '/domain-list',
+            type: 'GET',
+            cache: false,
+            success: function (jsDomainList) {
+                var objDomainList = JSON.parse(jsDomainList);
+                var options = '';
+                $.each(objDomainList, function (index, value) {
+                    if (value.domain === 'ALL') {
+                        return true;
+                    }
+                    options += '<option>' + value.domain + '</option>';
+                });
+                var form = '<form class="form-horizontal">';
+                    form += '<div class="form-group">' +
+                        '<label for="domain" class="col-sm-2 control-label">Алиас:</label>' +
+                        '<div class="col-sm-4">' +
+                        '<input type="text" class="form-control" id="mail" placeholder="Название">' +
+                        '</div>' +
+                        '<div class="col-sm-2">' +
+                        '<select class="form-control" id="domain">' +
+                         options +
+                        '</select>' +
+                        '</div>' +
+                        '<div class="col-sm-4" id="mail_error">' +
+                        '</div></div>' +
+                        '<div class="form-group">' +
+                        '<label for="goto" class="col-sm-2 control-label">Кому:</label>' +
+                        '<div class="col-sm-6">' +
+                        '<textarea id="aliases" rows="10" cols="67" placeholder="Ящики, по одному на строку"></textarea>' +
+                        '</div>' +
+                        '<div class="col-sm-4" id="aliases_error">' +
+                        '</div></div>' +
+                        '<div class="form-group">' +
+                        '<div class="col-sm-offset-2 col-sm-10">' +
+                        '<button class="btn btn-success" id="alias-submit">Добавить</button>' +
+                        '</div></div>' +
+                        '</form>';
+                $('#result').append(form);
+                $('#alias-submit').click(function(event){
+                    $('#mail_error').empty();
+                    $('#aliases_error').empty();
+                    var error = false;
+                    var address = $('#mail').val() + '@' + $('#domain').val();
+                    var goto = $('#aliases').val();
+                    if ($('#mail').val() === ''){
+                        $('#mail_error').append('<span class="error_msg">Поле не может быть пустым! </span>');
+                            error = true;
+                    }
+                    if (goto === ''){
+                        $('#aliases_error').append('<span class="error_msg">Поле не может быть пустым! </span>');
+                            error = true;
+                    }
+                    if (!error){
+                        $.ajax({
+                            url: '/alias-create',
+                            type: 'POST',
+                            cache: false,
+                            data: JSON.stringify({
+                                address: address,
+                                goto: goto
+                            }),
+                            headers: {"X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]},
+                            success: function(){
+                                $('#boxes').click();
+                            },
+                            error: function(){
+                                $('#result').text('Error, something wrong');
+                            }
+                        });
+                    }
+                event.preventDefault();
+                });
+            }
+        });
+        event.preventDefault();
+    });
+
+    $('body').on('click', '[alias-edit]', function(e){
+        e.preventDefault();
+        $('#result').empty();
+        var el = $(this);
+        var address = el.attr('alias-edit');
+        $.ajax({
+            url: '/alias-one',
+            type: 'POST',
+            cache: false,
+            data: JSON.stringify({address: address}),
+            headers: {"X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]},
+            success: function (alias) {
+                var obj_alias = JSON.parse(alias);
+                var form = '<form class="form-horizontal">';
+                    form += '<div class="form-group">' +
+                        '<label for="domain" class="col-sm-2 control-label">Алиас:</label>' +
+                        '<div class="col-sm-4">' +
+                        '<p class="form-control-static">' + obj_alias[0].address + '</p>' +
+                        '</div></div>' +
+                        '<div class="form-group">' +
+                        '<label for="goto" class="col-sm-2 control-label">Кому:</label>' +
+                        '<div class="col-sm-6">' +
+                        '<textarea id="aliases" rows="10" cols="67">' + obj_alias[0].goto.replace(',', '\n') + '</textarea>' +
+                        '</div>' +
+                        '<div class="col-sm-4" id="aliases_error">' +
+                        '</div></div>' +
+                        '<div class="form-group">' +
+                        '<div class="col-sm-offset-2 col-sm-10">' +
+                        '<button class="btn btn-success" id="alias-submit">Редактировать</button>' +
+                        '</div></div>' +
+                        '</form>';
+                $('#result').append(form);
+                $('#alias-submit').click(function(event){
+                    var error = false;
+                    var goto = $('#aliases').val();
+                    if (goto === '') {
+                        $('#alias_error').append('<span class="error_msg">Поле не может быть пустым! </span>');
+                        error = true;
+                    }
+                    if (!error) {
+                        $.ajax({
+                            url: '/alias-edit',
+                            type: 'POST',
+                            cache: false,
+                            data: JSON.stringify({
+                                goto: goto,
+                                address: address
+                            }),
+                            headers: {"X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]},
+                            success: function(){
+                                $('#boxes').click();
+                            },
+                            error: function(){
+                                $('#result').text('Error, something wrong');
+                            }
+                        });
+                    }
+                    event.preventDefault();
+                });
+            }
+        });
+    });
+
+    $('body').on('click', '[alias-remove]', function(e){
+        e.preventDefault();
+        $('#result').empty();
+        var el = $(this);
+        var address = el.attr('alias-remove');
+        $.ajax({
+            url: '/alias-remove',
+            type: 'POST',
+            cache: false,
+            headers: {"X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]},
+            data: JSON.stringify({address: address}),
+            success: function(){
+                $('#boxes').click();
+            },
+            error: function(){
+                $('#result').text('Error, something wrong');
+            }
+        });
     });
 });

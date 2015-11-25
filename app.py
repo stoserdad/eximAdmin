@@ -168,9 +168,50 @@ class AliasActiveEditHandler(tornado.web.RequestHandler):
 
 class BoxCreateHandler(tornado.web.RequestHandler):
 	def post(self):
-		print (self.request.body)
 		json_obj = json_decode(self.request.body)
 		self.write(json.dumps(box_create(json_obj['mail'], json_obj['pass'], json_obj['name'])))
+
+
+class BoxOneHandler(tornado.web.RequestHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		self.write(json.dumps(boxes(json_obj['username'])))
+
+
+class BoxEditHandler(tornado.web.RequestHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		box_update(json_obj['username'], json_obj['pass'], json_obj['name'])
+
+
+class BoxRemoveHandler(tornado.web.RequestHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		box_remove(json_obj['username'])
+
+
+class AliasCreateHandler(tornado.web.RequestHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		self.write(json.dumps(alias_create(json_obj['address'], json_obj['goto'])))
+
+
+class AliasOneHandler(tornado.web.RequestHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		self.write(json.dumps(aliases(json_obj['address'])))
+
+
+class AliasEditHandler(tornado.web.RequestHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		alias_update(json_obj['address'], json_obj['goto'])
+
+
+class AliasRemoveHandler(tornado.web.RequestHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		alias_remove(json_obj['address'])
 
 
 class Application(tornado.web.Application):
@@ -210,6 +251,13 @@ class Application(tornado.web.Application):
 			tornado.web.url(r'/box-active', MailBoxActiveEditHandler, name="box-active"),
 			tornado.web.url(r'/alias-active', AliasActiveEditHandler, name="alias-active"),
 			tornado.web.url(r'/box-create', BoxCreateHandler, name="box-create"),
+			tornado.web.url(r'/box-one', BoxOneHandler, name="box-one"),
+			tornado.web.url(r'/box-edit', BoxEditHandler, name="box-edit"),
+			tornado.web.url(r'/box-remove', BoxRemoveHandler, name="box-remove"),
+			tornado.web.url(r'/alias-create', AliasCreateHandler, name="alias-create"),
+			tornado.web.url(r'/alias-one', AliasOneHandler, name="alias-one"),
+			tornado.web.url(r'/alias-edit', AliasEditHandler, name="alias-edit"),
+			tornado.web.url(r'/alias-remove', AliasRemoveHandler, name="alias-remove"),
 		], **settings)
 
 
