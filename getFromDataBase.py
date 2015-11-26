@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
 from sqlalchemy.sql import func
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import and_
 
 engine = create_engine('mysql://root:@localhost/exim_2?charset=utf8')
 meta = MetaData(bind=engine, reflect=True)
@@ -221,9 +222,40 @@ def alias_create(address, goto):
 
 def alias_update(address, goto):
 	alias = meta.tables['alias']
-	engine.execute(alias.update().where(alias.c.address == address).values(goto=goto))
+	engine.execute(alias.update().where(alias.c.address == address).values(goto=goto, modified=datetime.now()))
 
 
 def alias_remove(address):
 	alias = meta.tables['alias']
 	engine.execute(alias.delete().where(alias.c.address == address))
+
+
+def check_username(username):
+	admin = meta.tables['admin']
+	if [dict(row) for row in engine.execute(select([admin.c.username]).where(and_(admin.c.username == username,
+																				 	  admin.c.active == 1)))]:
+		return True
+
+
+def check_password(username, password):
+	admin = meta.tables['admin']
+	data = [dict(row) for row in engine.execute(select([admin.c.password]).where(and_(admin.c.username == username,
+																				 	  admin.c.active == 1)))]
+	if pass_crypt(password, data[0]['password']):
+		return True
+
+
+def pass_check(username, password):
+	admin = meta.tables['admin']
+	data = [dict(row) for row in engine.execute(select([admin.c.password]).where(and_(admin.c.username == username,
+																				 	  admin.c.active == 1)))]
+	if pass_crypt(password, data[0]['password']):
+		return 'true'
+	else:
+		return 'false'
+
+
+def pass_update(username, password):
+	admin = meta.tables['admin']
+	engine.execute(admin.update().where(admin.c.username == username).values(password=pass_crypt(password),
+																			 modified=datetime.now()))

@@ -33,7 +33,7 @@ class LoginHandler(BaseHandler):
 		getusername = self.get_argument("username")
 		getpassword = self.get_argument("password")
 		# TODO : Check data from DB
-		if "demo" == getusername and "demo" == getpassword:
+		if check_username(getusername) and check_password(getusername, getpassword):
 			self.set_secure_cookie("user", self.get_argument("username"))
 			self.redirect(self.reverse_url("main"))
 		else:
@@ -47,32 +47,36 @@ class LoginHandler(BaseHandler):
 class LogoutHandler(BaseHandler):
 	def get(self):
 		self.clear_cookie("user")
+		self.clear_cookie("_xsrf")
 		self.redirect(self.get_argument("next", self.reverse_url("login")))
 
 
-class AdminHandler(tornado.web.RequestHandler):
+class AdminHandler(BaseHandler):
+	@tornado.web.authenticated
 	def get(self):
 		self.write(json.dumps(admin_list()))
 
 
-class DomainHandler(tornado.web.RequestHandler):
+class DomainHandler(BaseHandler):
+	@tornado.web.authenticated
 	def get(self):
 		self.write(json.dumps(domain_list()))
 
 
-class DomainOneHandler(tornado.web.RequestHandler):
+class DomainOneHandler(BaseHandler):
+	@tornado.web.authenticated
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		self.write(json.dumps(domain_list(json_obj['domain'])))
 
 
-class DomainEditHandler(tornado.web.RequestHandler):
+class DomainEditHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		domain_edit(json_obj['domain'], json_obj['description'], json_obj['aliases'], json_obj['boxes'], json_obj['quota'])
 
 
-class AdminCreateHandler(tornado.web.RequestHandler):
+class AdminCreateHandler(BaseHandler):
 	def post(self):
 		print (self.request.body)
 		json_obj = json_decode(self.request.body)
@@ -81,7 +85,7 @@ class AdminCreateHandler(tornado.web.RequestHandler):
 		self.write(json.dumps(admin_create(username, password)))
 
 
-class DomainCreateHandler(tornado.web.RequestHandler):
+class DomainCreateHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		domain = json_obj['domain'].strip()
@@ -92,126 +96,142 @@ class DomainCreateHandler(tornado.web.RequestHandler):
 		self.write(json.dumps(domain_create(domain, description, alias, box, quota)))
 
 
-class DomainActiveEditHandler(tornado.web.RequestHandler):
+class DomainActiveEditHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		domain_active_edit(json_obj['dom'], json_obj['val'])
 
 
-class DomainRemoveHandler(tornado.web.RequestHandler):
+class DomainRemoveHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		domain_remove(json_obj['domain'])
 
 
-class AdminRemoveHandler(tornado.web.RequestHandler):
+class AdminRemoveHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		admin_remove(json_obj['admin'])
 
 
-class BlacklistHandler(tornado.web.RequestHandler):
+class BlacklistHandler(BaseHandler):
+	@tornado.web.authenticated
 	def get(self):
 		self.write(json.dumps(black_list()))
 
 
-class WhitelistHandler(tornado.web.RequestHandler):
+class WhitelistHandler(BaseHandler):
+	@tornado.web.authenticated
 	def get(self):
 		self.write(json.dumps(white_list()))
 
 
-class BRemoveHandler(tornado.web.RequestHandler):
+class BRemoveHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		b_remove(json_obj['sender'])
 
 
-class WRemoveHandler(tornado.web.RequestHandler):
+class WRemoveHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		w_remove(json_obj['sender'])
 
 
-class BAddHandler(tornado.web.RequestHandler):
+class BAddHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		b_add(json_obj['email'])
 
 
-class WAddHandler(tornado.web.RequestHandler):
+class WAddHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		w_add(json_obj['email'])
 
 
-class BoxesHandler(tornado.web.RequestHandler):
+class BoxesHandler(BaseHandler):
+	@tornado.web.authenticated
 	def get(self):
 		self.write(json.dumps(boxes()))
 
 
-class AliasHandler(tornado.web.RequestHandler):
+class AliasHandler(BaseHandler):
+	@tornado.web.authenticated
 	def get(self):
 		self.write(json.dumps(aliases()))
 
 
-class MailBoxActiveEditHandler(tornado.web.RequestHandler):
+class MailBoxActiveEditHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		box_active_edit(json_obj['box'], json_obj['val'])
 
 
-class AliasActiveEditHandler(tornado.web.RequestHandler):
+class AliasActiveEditHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		alias_active_edit(json_obj['address'], json_obj['val'])
 
 
-class BoxCreateHandler(tornado.web.RequestHandler):
+class BoxCreateHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		self.write(json.dumps(box_create(json_obj['mail'], json_obj['pass'], json_obj['name'])))
 
 
-class BoxOneHandler(tornado.web.RequestHandler):
+class BoxOneHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		self.write(json.dumps(boxes(json_obj['username'])))
 
 
-class BoxEditHandler(tornado.web.RequestHandler):
+class BoxEditHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		box_update(json_obj['username'], json_obj['pass'], json_obj['name'])
 
 
-class BoxRemoveHandler(tornado.web.RequestHandler):
+class BoxRemoveHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		box_remove(json_obj['username'])
 
 
-class AliasCreateHandler(tornado.web.RequestHandler):
+class AliasCreateHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		self.write(json.dumps(alias_create(json_obj['address'], json_obj['goto'])))
 
 
-class AliasOneHandler(tornado.web.RequestHandler):
+class AliasOneHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		self.write(json.dumps(aliases(json_obj['address'])))
 
 
-class AliasEditHandler(tornado.web.RequestHandler):
+class AliasEditHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		alias_update(json_obj['address'], json_obj['goto'])
 
 
-class AliasRemoveHandler(tornado.web.RequestHandler):
+class AliasRemoveHandler(BaseHandler):
 	def post(self):
 		json_obj = json_decode(self.request.body)
 		alias_remove(json_obj['address'])
+
+
+class PassCheckHandler(BaseHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		self.write(pass_check(json_obj['username'], json_obj['pass']))
+
+
+class PassUpdateHandler(BaseHandler):
+	def post(self):
+		json_obj = json_decode(self.request.body)
+		pass_update(json_obj['username'], json_obj['pass'])
 
 
 class Application(tornado.web.Application):
@@ -258,6 +278,8 @@ class Application(tornado.web.Application):
 			tornado.web.url(r'/alias-one', AliasOneHandler, name="alias-one"),
 			tornado.web.url(r'/alias-edit', AliasEditHandler, name="alias-edit"),
 			tornado.web.url(r'/alias-remove', AliasRemoveHandler, name="alias-remove"),
+			tornado.web.url(r'/pass-check', PassCheckHandler, name="pass-check"),
+			tornado.web.url(r'/pass-update', PassUpdateHandler, name="pass-update"),
 		], **settings)
 
 

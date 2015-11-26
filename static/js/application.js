@@ -76,7 +76,6 @@ $(function() {
             var valuePass2 = $('#pass2').val();
             var valueDomain= $('#domain').val();
             var re = /(?:\w+)?[-_.]?\w+@(?:\w+)?[-_.]?\w+\.\w+/;
-
                 if (valuePass != valuePass2) {
                     $('#passerror').append('<span class="error_msg">Пароли не совпадают! </span>');
                     error = true;
@@ -105,9 +104,7 @@ $(function() {
                             url: '/admin-create',
                             type: 'POST',
                             cache: false,
-                            headers: {
-                                "X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]
-                            },
+                            headers: {"X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]},
                             data: JSON.stringify(data),
                             success: function () {
                                 $('#admin-list').click();
@@ -1150,5 +1147,99 @@ $(function() {
                 $('#result').text('Error, something wrong');
             }
         });
+    });
+
+    $('#ch_pass').click(function(event){
+        $('#result').empty();
+        var form = '<form class="form-horizontal">';
+            form += '<div class="form-group">' +
+                    '<label for="mail" class="col-sm-3 control-label">Имя для входа:</label>' +
+                    '<div class="col-sm-4">' +
+                    '<p class="form-control-static">' + $('[val_username]').attr('val_username') + '</p>' +
+                    '</div></div>' +
+                    '<div class="form-group">' +
+                    '<label for="mail" class="col-sm-3 control-label">Текущий пароль:</label>' +
+                    '<div class="col-sm-4">' +
+                    '<input type="password" class="form-control" id="old_pass" placeholder="Пароль">' +
+                    '</div>' +
+                    '<div class="col-sm-4" id="old_pass_error">' +
+                    '</div></div>' +
+                    '<div class="form-group">' +
+                    '<label for="pass" class="col-sm-3 control-label">Новый пароль:</label>' +
+                    '<div class="col-sm-4">' +
+                    '<input type="password" class="form-control" id="top_pass" placeholder="Пароль">' +
+                    '</div>' +
+                    '<div class="col-sm-4" id="top_pass_error">' +
+                    '</div></div>' +
+                    '<div class="form-group">' +
+                    '<label for="pass" class="col-sm-3 control-label">Новый пароль (еще раз):</label>' +
+                    '<div class="col-sm-4">' +
+                    '<input type="password" class="form-control" id="top_pass2" placeholder="Пароль">' +
+                    '</div>' +
+                    '<div class="col-sm-4" id="top_pass2_error">' +
+                    '</div></div>' +
+                    '<div class="form-group">' +
+                    '<div class="col-sm-offset-3 col-sm-10">' +
+                    '<button class="btn btn-success" id="top_pass-submit">Изменить</button>' +
+                    '</div></div>' +
+                    '</form>';
+        $('#result').append(form);
+        $('#top_pass-submit').click(function(event){
+            $('#top_pass2_error').empty();
+            $('#top_pass_error').empty();
+            $('#old_pass_error').empty();
+            var error;
+            var oldpass = $('#old_pass').val();
+            var newpass = $('#top_pass').val();
+            var newpass2 = $('#top_pass2').val();
+            if (newpass != newpass2) {
+                $('#top_pass2_error').append('<span class="error_msg">Пароли не совпадают! </span>');
+                error = true;
+            }
+            if (newpass === '' || newpass2 === '') {
+                $('#top_pass_error').append('<span class="error_msg">Пароль не может быть пустым! </span>');
+                error = true;
+            }
+            if (!error) {
+                $.ajax({
+                    url: '/pass-check',
+                    type: 'POST',
+                    cache: false,
+                    data: JSON.stringify({
+                        pass: oldpass,
+                        username: $('[val_username]').attr('val_username')
+                    }),
+                    headers: {"X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]},
+                    success: function (msg) {
+                        if (msg === 'true') {
+                            $.ajax({
+                                url: '/pass-update',
+                                type: 'POST',
+                                cache: false,
+                                headers: {"X-Xsrftoken": document.cookie.split(';')[0].split('=')[1]},
+                                data: JSON.stringify({
+                                    username: $('[val_username]').attr('val_username'),
+                                    pass: newpass
+                                }),
+                                success: function(){
+                                    $('#result').empty();
+                                    alert('Пароль изменен');
+                                },
+                                error: function(){
+                                    $('#result').text('Error, something wrong');
+                                }
+                            });
+                        }else if (msg === 'false'){
+                            $('#old_pass_error').append('<span class="error_msg">Пароль не верный! </span>');
+                        }
+                    },
+                    error: function () {
+                        $('#result').text('Error, something wrong');
+                    }
+                });
+            }
+            event.preventDefault();
+        });
+        event.preventDefault();
     });
 });

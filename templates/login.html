@@ -3,19 +3,21 @@
         <title>Please Log In</title>
         <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
         <link rel="stylesheet" type="text/css" href="/static/css/app.css">
+{#        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>#}
+{#        <script type="text/javascript" src="/static/js/login.js"></script>#}
     </head>
 
     <body>
 
         <div class="mypanel">
-            <form action="/login" method="POST" class="pure-form pure-form-aligned">
+            <form action="/login" method="POST" class="pure-form pure-form-aligned" id="login_form">
                     <div class="pure-control-group">
                         <label for="username">Username</label>
-                        <input type="text" name="username" />
+                        <input type="text" name="username" id="username"/>
                     </div>
                     <div class="pure-control-group">
                         <label for="password">Password</label>
-                        <input type="password" name="password" />
+                        <input type="password" name="password" id="password"/>
                     </div>
                     <div class="pure-control-group">
                         <label></label>
