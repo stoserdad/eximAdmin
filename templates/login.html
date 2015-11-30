@@ -1,31 +1,18 @@
 <html>
     <head>
-        <title>Please Log In</title>
-        <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
-        <link rel="stylesheet" type="text/css" href="/static/css/app.css">
-{#        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>#}
-{#        <script type="text/javascript" src="/static/js/login.js"></script>#}
+        <meta charset="utf-8">
+        <link rel="stylesheet" type="text/css" href="/static/css/login.css" />
+        <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+        <script type="text/javascript" src="/static/js/placeholder.js"></script>
     </head>
 
     <body>
-
-        <div class="mypanel">
-            <form action="/login" method="POST" class="pure-form pure-form-aligned" id="login_form">
-                    <div class="pure-control-group">
-                        <label for="username">Username</label>
-                        <input type="text" name="username" id="username"/>
-                    </div>
-                    <div class="pure-control-group">
-                        <label for="password">Password</label>
-                        <input type="password" name="password" id="password"/>
-                    </div>
-                    <div class="pure-control-group">
-                        <label></label>
-                        <input type="submit" value="Log In" />
-                    </div>
+        <form id="slick-login" action="/login" method="POST">
+            <input type="text" name="username" class="placeholder" placeholder="username" id="username">
+            <input type="password" name="password" class="placeholder" placeholder="password" id="password">
+            <input type="submit" value="ВОЙТИ">
             {% module xsrf_form_html() %}
-            </form>
-        </div>
+        </form>
     </body>
 </html>
 

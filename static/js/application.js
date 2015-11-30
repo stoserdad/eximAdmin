@@ -684,13 +684,14 @@ $(function() {
                 success: function (jsBoxes) {
                     var objBoxes = JSON.parse(jsBoxes);
                     if (objBoxes.length > 0) {
-                        var mtable = '<table class="table-bordered table">';
+                        var mtable = '<table class="table-bordered table table-condensed">';
                         mtable += '<thead><tr class = "success">' +
                             '<td>Ящик</td>' +
                             '<td>Имя</td>' +
                             '<td>Последнее изменение</td>' +
                             '<td>Активен</td>' +
                             '<td colspan="2">&nbsp;</td></thead>';
+
                         $.each(objBoxes, function (index, value) {
                             var timeStamp = new Date(value.modified * 1000);
                             mtable += '<tr class="hilightoff" onmouseover="className= \'hilighton\';" onmouseout="className=\'hilightoff\';">' +
@@ -717,7 +718,7 @@ $(function() {
                 success: function (jsAliases) {
                     var objAliases = JSON.parse(jsAliases);
                     if (objAliases.length > 0) {
-                        var atable = '<table class="table-bordered table">';
+                        var atable = '<table class="table-bordered table table-condensed">';
                         atable += '<thead><tr class = "success">' +
                             '<td>От</td>' +
                             '<td>Кому</td>' +
@@ -1241,5 +1242,25 @@ $(function() {
             event.preventDefault();
         });
         event.preventDefault();
+    });
+
+    $('#f_ch_pass').click(function(e){
+        e.preventDefault();
+        $('#ch_pass').click();
+    });
+
+    $('#f_add-alias').click(function(e){
+        e.preventDefault();
+        $('#add-alias').click();
+    });
+
+    $('#f_add-box').click(function(e){
+        e.preventDefault();
+        $('#add-box').click();
+    });
+
+    $('#f_boxes').click(function(e){
+        e.preventDefault();
+        $('#boxes').click();
     });
 });

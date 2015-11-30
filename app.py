@@ -41,7 +41,8 @@ class LoginHandler(BaseHandler):
 			if not wrong:
 				wrong = 0
 			self.set_secure_cookie("wrong", str(int(wrong) + 1))
-			self.write('Something Wrong With Your Data <a href="/login">Back</a> ' + str(wrong))
+			# self.write('Something Wrong With Your Data <a href="/login">Back</a> ' + str(wrong))
+			self.render('login.html')
 
 
 class LogoutHandler(BaseHandler):
